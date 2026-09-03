@@ -1,0 +1,10 @@
+{
+  "model_name": "rule_baseline_v1",
+  "base_rate": 0.5420666666666667,
+  "precision_at_10": 0.6,
+  "precision_at_20": 0.6,
+  "precision_at_50": 0.7,
+  "precision_at_100": 0.63,
+  "precision_at_500": 0.614,
+  "total_items": 30000
+}
