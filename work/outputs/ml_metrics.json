@@ -1,0 +1,6 @@
+{
+  "model_name": "gradient_boosting_opportunity_scorer_v1",
+  "total_scored_items": 30000,
+  "top_50_declining_precision": 1.0,
+  "top_100_declining_precision": 0.99
+}
