@@ -34,3 +34,6 @@ __pycache__/
 .venv/
 venv/
 .env
+
+# --- Temporary scratch directory -------------------------------------------
+scratch/
