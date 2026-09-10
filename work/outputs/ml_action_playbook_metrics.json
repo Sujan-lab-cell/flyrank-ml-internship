@@ -1,0 +1,42 @@
+{
+  "evaluation_population": 16513,
+  "unique_clients": 36,
+  "validation": {
+    "method": "5-fold GroupKFold by client",
+    "client_overlap_per_fold": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "precision_at_50_random_forest": 0.444,
+    "precision_at_50_baseline": 0.392,
+    "absolute_improvement_at_50": 0.052,
+    "improvement_percentage_points": 5.2
+  },
+  "precision_at_k": {
+    "baseline": {
+      "P@10": 0.4,
+      "P@20": 0.37,
+      "P@50": 0.392,
+      "P@100": 0.388
+    },
+    "random_forest": {
+      "P@10": 0.46,
+      "P@20": 0.43,
+      "P@50": 0.444,
+      "P@100": 0.448
+    }
+  },
+  "random_forest_fold_p50": [
+    0.44,
+    0.32,
+    0.46,
+    0.64,
+    0.36
+  ],
+  "target_definition": "decline = (may_clicks < 0.8 * april_clicks).astype(int)",
+  "eligibility_criteria": "impressions_total >= 1000 AND april_clicks >= 10",
+  "methodological_note": "Performance is measured under client-grouped validation and should be interpreted as a historical validation benchmark rather than guaranteed production performance."
+}
