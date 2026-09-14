@@ -355,7 +355,7 @@
         <p>The baseline flagged a page when <code>april_clicks &lt; march_clicks</code>, ranking flagged pages by April impressions. This provides a simple, realistic reference point for evaluating whether machine-learning ranking adds useful signal.</p>
 
         <h3>Model Architecture &amp; Validation Design</h3>
-        <p>The main model was a <strong>Random Forest classifier</strong>. Performance was evaluated using <strong>5-fold GroupKFold by client</strong>. Client identity was used strictly to define groups, ensuring zero client overlap between training and validation folds (0 client overlap per fold across all 5 folds). This tests whether the model can generalize to held-out clients.</p>
+        <p>The final model was a <strong>Random Forest classifier</strong>, selected after a controlled comparison across eight model families (Baseline, Logistic Regression, Decision Tree, HistGradientBoosting, LightGBM, CatBoost, XGBoost, and Random Forest). Performance was evaluated using <strong>5-fold GroupKFold by client</strong>. Client identity was used strictly to define groups, ensuring zero client overlap between training and validation folds (0 client overlap per fold across all 5 folds). This tests whether the model can generalize to held-out clients.</p>
 
         <h3>Leakage Checks</h3>
         <p>The Week 6 leakage audit verified that future May fields were excluded, target fields were omitted from the feature matrix, IDs were non-predictive, and all features ended at or before April 30, 2026. The audit passed with zero identified future or target leakage.</p>
@@ -364,12 +364,12 @@
       <!-- Section 5: Results -->
       <section id="results">
         <h2>5. Results</h2>
-        <p>The Random Forest classifier was compared with the historical baseline across the 16,513 eligible pages using 5-fold client-grouped validation under Precision@K evaluation.</p>
+        <p>All models were evaluated on identical validation folds, eligible population (16,513 pages across 36 clients), and deterministic tie-breaking under client-grouped 5-fold validation.</p>
 
         <table>
           <thead>
             <tr>
-              <th>Method</th>
+              <th>Model Family</th>
               <th class="num">Precision@10</th>
               <th class="num">Precision@20</th>
               <th class="num">Precision@50</th>
@@ -385,6 +385,48 @@
               <td class="num">0.388</td>
             </tr>
             <tr>
+              <td>Logistic Regression</td>
+              <td class="num">0.380</td>
+              <td class="num">0.400</td>
+              <td class="num">0.424</td>
+              <td class="num">0.438</td>
+            </tr>
+            <tr>
+              <td>Decision Tree</td>
+              <td class="num">0.400</td>
+              <td class="num">0.390</td>
+              <td class="num">0.324</td>
+              <td class="num">0.346</td>
+            </tr>
+            <tr>
+              <td>HistGradientBoosting</td>
+              <td class="num">0.440</td>
+              <td class="num">0.420</td>
+              <td class="num">0.436</td>
+              <td class="num">0.442</td>
+            </tr>
+            <tr>
+              <td>LightGBM</td>
+              <td class="num">0.450</td>
+              <td class="num">0.425</td>
+              <td class="num">0.438</td>
+              <td class="num">0.444</td>
+            </tr>
+            <tr>
+              <td>CatBoost</td>
+              <td class="num">0.450</td>
+              <td class="num">0.430</td>
+              <td class="num">0.440</td>
+              <td class="num">0.445</td>
+            </tr>
+            <tr>
+              <td>XGBoost</td>
+              <td class="num">0.450</td>
+              <td class="num">0.430</td>
+              <td class="num">0.442</td>
+              <td class="num">0.446</td>
+            </tr>
+            <tr>
               <td><strong>Random Forest</strong></td>
               <td class="num"><strong>0.460</strong></td>
               <td class="num"><strong>0.430</strong></td>
@@ -394,12 +436,81 @@
           </tbody>
         </table>
 
-        <p>The Random Forest achieved a measured <strong>Precision@50 of 0.444</strong>, compared with <strong>0.392 for the baseline</strong>, representing an improvement of <strong>5.2 percentage points</strong>.</p>
+        <p>Under benchmark warehouse validation, <strong>Random Forest</strong> retained the top Precision@50 of <strong>0.444</strong>, compared with <strong>0.392 for the baseline</strong>, representing an improvement of <strong>5.2 percentage points</strong> (+0.052 absolute lift).</p>
         <p>This provides directional evidence that machine-learning ranking can help content teams focus review effort under a client-grouped validation setup. The result should not be treated as a production guarantee or service-level target.</p>
 
+        <h3>Actual Random Forest Feature Importances (<code>rf.feature_importances_</code>)</h3>
+        <table>
+          <thead>
+            <tr>
+              <th class="num">Rank</th>
+              <th>Feature</th>
+              <th class="num">RF Gini Importance</th>
+              <th class="num">Cumulative Share</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="num">1</td>
+              <td><code>momentum</code></td>
+              <td class="num">0.2899</td>
+              <td class="num">28.99%</td>
+            </tr>
+            <tr>
+              <td class="num">2</td>
+              <td><code>april_impressions</code></td>
+              <td class="num">0.2203</td>
+              <td class="num">51.02%</td>
+            </tr>
+            <tr>
+              <td class="num">3</td>
+              <td><code>impressions_total</code></td>
+              <td class="num">0.1921</td>
+              <td class="num">70.23%</td>
+            </tr>
+            <tr>
+              <td class="num">4</td>
+              <td><code>ctr</code></td>
+              <td class="num">0.0634</td>
+              <td class="num">76.57%</td>
+            </tr>
+            <tr>
+              <td class="num">5</td>
+              <td><code>feb_clicks</code></td>
+              <td class="num">0.0633</td>
+              <td class="num">82.90%</td>
+            </tr>
+            <tr>
+              <td class="num">6</td>
+              <td><code>weighted_position</code></td>
+              <td class="num">0.0590</td>
+              <td class="num">88.80%</td>
+            </tr>
+            <tr>
+              <td class="num">7</td>
+              <td><code>clicks_total</code></td>
+              <td class="num">0.0540</td>
+              <td class="num">94.20%</td>
+            </tr>
+            <tr>
+              <td class="num">8</td>
+              <td><code>april_clicks</code></td>
+              <td class="num">0.0512</td>
+              <td class="num">99.32%</td>
+            </tr>
+            <tr>
+              <td class="num">9</td>
+              <td><code>active_days</code></td>
+              <td class="num">0.0067</td>
+              <td class="num">100.00%</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><em>(Note: Standardized Logistic Regression coefficients are maintained separately as directional log-odds weights and are distinct from tree Gini importances.)</em></p>
+
         <div class="figure-container">
-          <img src="figures/ml_precision_at_k_comparison.png" alt="Precision@K Comparison: Random Forest vs Baseline">
-          <p class="figure-caption">Figure 1: Precision@K comparison between Random Forest and Baseline across K = 10, 20, 50, and 100.</p>
+          <img src="figures/ml_precision_at_k_comparison.png" alt="8-Model Precision@K Comparison: Baseline vs Tree & Boosting Families">
+          <p class="figure-caption">Figure 1: 8-model family Precision@K comparison across K = 10, 20, 50, and 100 under client-grouped validation.</p>
         </div>
 
         <div class="figure-container">
